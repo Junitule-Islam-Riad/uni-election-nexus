@@ -1,11 +1,40 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, Vote, ArrowRight } from "lucide-react";
+import { Mail, Lock, Vote, ArrowRight, UserPlus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { signIn, signUp, user } = useAuth();
+  const navigate = useNavigate();
+
+  if (user) {
+    navigate("/campaigns", { replace: true });
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setLoading(true);
+
+    const { error } = isSignUp ? await signUp(email, password) : await signIn(email, password);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else if (isSignUp) {
+      toast({ title: "Check your email", description: "We sent you a confirmation link." });
+    } else {
+      navigate("/campaigns");
+    }
+    setLoading(false);
+  };
 
   return (
     <Layout>
@@ -23,10 +52,12 @@ const Login = () => {
               <Vote className="w-7 h-7 text-primary" />
             </div>
             <h1 className="text-2xl font-bold mb-2">Welcome to UniVote</h1>
-            <p className="text-muted-foreground text-sm">Sign in with your university email</p>
+            <p className="text-muted-foreground text-sm">
+              {isSignUp ? "Create your account" : "Sign in with your university email"}
+            </p>
           </div>
 
-          <div className="glass-card rounded-xl p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="glass-card rounded-xl p-6 space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Email</label>
               <div className="relative">
@@ -36,6 +67,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@university.edu"
+                  required
                   className="w-full bg-secondary/50 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                 />
               </div>
@@ -50,20 +82,41 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  required
+                  minLength={6}
                   className="w-full bg-secondary/50 border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                 />
               </div>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-lg font-semibold text-sm neon-glow hover:shadow-neon-lg transition-all duration-300 hover:scale-[1.02]">
-              Sign In
-              <ArrowRight className="w-4 h-4" />
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-lg font-semibold text-sm neon-glow hover:shadow-neon-lg transition-all duration-300 hover:scale-[1.02] disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              ) : isSignUp ? (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  Create Account
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
 
-            <p className="text-center text-xs text-muted-foreground">
-              Only verified university emails can access elections
-            </p>
-          </div>
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="w-full text-center text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+            </button>
+          </form>
         </motion.div>
       </div>
     </Layout>

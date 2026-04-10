@@ -1,17 +1,25 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Vote, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-
-const navItems = [
-  { label: "Campaigns", href: "/campaigns" },
-  { label: "Admin", href: "/admin" },
-  { label: "Candidate Portal", href: "/candidate" },
-];
+import { Vote, Menu, X, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut } = useAuth();
+
+  const navItems = [
+    { label: "Campaigns", href: "/campaigns" },
+    ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
+    { label: "Candidate Portal", href: "/candidate" },
+  ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/50">
@@ -41,12 +49,25 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            to="/login"
-            className="px-5 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:shadow-neon-sm transition-all"
-          >
-            Sign In
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">{user.email}</span>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="px-5 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:shadow-neon-sm transition-all"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -72,13 +93,22 @@ const Navbar = () => {
               {item.label}
             </Link>
           ))}
-          <Link
-            to="/login"
-            onClick={() => setOpen(false)}
-            className="block text-center px-4 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
-          >
-            Sign In
-          </Link>
+          {user ? (
+            <button
+              onClick={() => { handleSignOut(); setOpen(false); }}
+              className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="block text-center px-4 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
+            >
+              Sign In
+            </Link>
+          )}
         </motion.div>
       )}
     </nav>

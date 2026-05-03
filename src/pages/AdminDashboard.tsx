@@ -290,6 +290,40 @@ const AdminDashboard = () => {
               </div>
             </motion.div>
           )}
+
+          {/* Community Tab */}
+          {tab === "community" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+              <div className="glass-card rounded-xl p-5">
+                <h3 className="font-semibold mb-1">Community Member Approval</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Approve PCIU members so they can post in the Social Hub.
+                </p>
+                {pendingMembers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No pending members.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {pendingMembers.map((p) => (
+                      <div key={p.user_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/30">
+                        <div>
+                          <div className="text-sm font-medium">{p.display_name ?? "Unnamed"}</div>
+                          <div className="text-xs text-muted-foreground">{p.email}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => setMemberStatus(p.user_id, "approved")} className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setMemberStatus(p.user_id, "rejected")} className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20">
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </Layout>

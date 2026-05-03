@@ -39,14 +39,25 @@ const AdminDashboard = () => {
     setPendingCandidates(data ?? []);
   };
 
+  const loadPendingMembers = async () => {
+    const { data } = await supabase.from("profiles").select("*").eq("community_status", "pending");
+    setPendingMembers((data as any) ?? []);
+  };
+
   const loadWhitelist = async () => {
     if (!selectedCampaignId) return;
     const { data } = await supabase.from("voter_whitelist").select("*").eq("campaign_id", selectedCampaignId);
     setWhitelistedEmails(data ?? []);
   };
 
-  useEffect(() => { loadCampaigns(); loadPending(); }, []);
+  useEffect(() => { loadCampaigns(); loadPending(); loadPendingMembers(); }, []);
   useEffect(() => { loadWhitelist(); }, [selectedCampaignId]);
+
+  const setMemberStatus = async (userId: string, status: "approved" | "rejected") => {
+    await supabase.from("profiles").update({ community_status: status } as any).eq("user_id", userId);
+    loadPendingMembers();
+    toast({ title: `Member ${status}` });
+  };
 
   const createCampaign = async () => {
     if (!newTitle || !newStart || !newEnd || !user) return;

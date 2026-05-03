@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Users, Settings, BarChart3, CheckCircle, XCircle, Clock, Link as LinkIcon, Trash2 } from "lucide-react";
+import { Plus, Users, Settings, BarChart3, CheckCircle, XCircle, Clock, Link as LinkIcon, Trash2, MessageSquare } from "lucide-react";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,12 +9,14 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Campaign = Tables<"campaigns">;
 type CandidateRow = Tables<"candidates">;
+type Profile = Tables<"profiles"> & { community_status?: string };
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"campaigns" | "approvals" | "voters">("campaigns");
+  const [tab, setTab] = useState<"campaigns" | "approvals" | "voters" | "community">("campaigns");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [pendingCandidates, setPendingCandidates] = useState<CandidateRow[]>([]);
+  const [pendingMembers, setPendingMembers] = useState<Profile[]>([]);
   const [whitelistEmail, setWhitelistEmail] = useState("");
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
   const [whitelistedEmails, setWhitelistedEmails] = useState<{ id: string; email: string; campaign_id: string }[]>([]);
@@ -37,14 +39,25 @@ const AdminDashboard = () => {
     setPendingCandidates(data ?? []);
   };
 
+  const loadPendingMembers = async () => {
+    const { data } = await supabase.from("profiles").select("*").eq("community_status", "pending");
+    setPendingMembers((data as any) ?? []);
+  };
+
   const loadWhitelist = async () => {
     if (!selectedCampaignId) return;
     const { data } = await supabase.from("voter_whitelist").select("*").eq("campaign_id", selectedCampaignId);
     setWhitelistedEmails(data ?? []);
   };
 
-  useEffect(() => { loadCampaigns(); loadPending(); }, []);
+  useEffect(() => { loadCampaigns(); loadPending(); loadPendingMembers(); }, []);
   useEffect(() => { loadWhitelist(); }, [selectedCampaignId]);
+
+  const setMemberStatus = async (userId: string, status: "approved" | "rejected") => {
+    await supabase.from("profiles").update({ community_status: status } as any).eq("user_id", userId);
+    loadPendingMembers();
+    toast({ title: `Member ${status}` });
+  };
 
   const createCampaign = async () => {
     if (!newTitle || !newStart || !newEnd || !user) return;
@@ -96,8 +109,9 @@ const AdminDashboard = () => {
 
   const tabs = [
     { key: "campaigns" as const, label: "Campaigns", icon: BarChart3 },
-    { key: "approvals" as const, label: "Approvals", icon: CheckCircle },
+    { key: "approvals" as const, label: "Candidates", icon: CheckCircle },
     { key: "voters" as const, label: "Voters", icon: Users },
+    { key: "community" as const, label: "Community", icon: MessageSquare },
   ];
 
   return (
@@ -273,6 +287,40 @@ const AdminDashboard = () => {
                     <p className="text-sm text-muted-foreground">No voters whitelisted for this campaign</p>
                   )}
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Community Tab */}
+          {tab === "community" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+              <div className="glass-card rounded-xl p-5">
+                <h3 className="font-semibold mb-1">Community Member Approval</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Approve PCIU members so they can post in the Social Hub.
+                </p>
+                {pendingMembers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No pending members.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {pendingMembers.map((p) => (
+                      <div key={p.user_id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/30">
+                        <div>
+                          <div className="text-sm font-medium">{p.display_name ?? "Unnamed"}</div>
+                          <div className="text-xs text-muted-foreground">{p.email}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => setMemberStatus(p.user_id, "approved")} className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setMemberStatus(p.user_id, "rejected")} className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20">
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

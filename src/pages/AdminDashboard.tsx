@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Users, Settings, BarChart3, CheckCircle, XCircle, Clock, Link as LinkIcon, Trash2 } from "lucide-react";
+import { Plus, Users, Settings, BarChart3, CheckCircle, XCircle, Clock, Link as LinkIcon, Trash2, MessageSquare } from "lucide-react";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,12 +9,14 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Campaign = Tables<"campaigns">;
 type CandidateRow = Tables<"candidates">;
+type Profile = Tables<"profiles"> & { community_status?: string };
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const [tab, setTab] = useState<"campaigns" | "approvals" | "voters">("campaigns");
+  const [tab, setTab] = useState<"campaigns" | "approvals" | "voters" | "community">("campaigns");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [pendingCandidates, setPendingCandidates] = useState<CandidateRow[]>([]);
+  const [pendingMembers, setPendingMembers] = useState<Profile[]>([]);
   const [whitelistEmail, setWhitelistEmail] = useState("");
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
   const [whitelistedEmails, setWhitelistedEmails] = useState<{ id: string; email: string; campaign_id: string }[]>([]);

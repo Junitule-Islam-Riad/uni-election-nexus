@@ -109,8 +109,9 @@ const AdminDashboard = () => {
 
   const tabs = [
     { key: "campaigns" as const, label: "Campaigns", icon: BarChart3 },
-    { key: "approvals" as const, label: "Approvals", icon: CheckCircle },
+    { key: "approvals" as const, label: "Candidates", icon: CheckCircle },
     { key: "voters" as const, label: "Voters", icon: Users },
+    { key: "community" as const, label: "Community", icon: MessageSquare },
   ];
 
   return (

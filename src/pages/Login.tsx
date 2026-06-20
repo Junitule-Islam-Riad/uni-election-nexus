@@ -109,6 +109,14 @@ const Login = () => {
               )}
             </button>
 
+            {!isSignUp && (
+              <a
+                href="/forgot-password"
+                className="w-full text-center text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                Forgot password?
+              </a>
+            )}
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}

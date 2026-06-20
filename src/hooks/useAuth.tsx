@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAdmin: roles.includes("admin"),
         isCandidate: roles.includes("candidate"),
         isVoter: roles.includes("voter"),
-        signIn, signUp, signOut,
+        signIn, signUp, resetPassword, updatePassword, signOut,
       }}
     >
       {children}

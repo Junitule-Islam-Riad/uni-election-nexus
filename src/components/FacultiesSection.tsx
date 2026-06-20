@@ -1,93 +1,132 @@
 import { motion } from "framer-motion";
-import {
-  GraduationCap, Cpu, Building2, FlaskConical, Briefcase, Stethoscope,
-  Users, Code2, Music, Camera, Trophy, BookOpen,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import engineeringImg from "@/assets/ecosystem-engineering.jpg";
+import businessImg from "@/assets/ecosystem-business.jpg";
+import healthImg from "@/assets/ecosystem-health.jpg";
+import cseImg from "@/assets/ecosystem-cse.jpg";
+import clubsImg from "@/assets/ecosystem-clubs.jpg";
+import scienceImg from "@/assets/ecosystem-science.jpg";
 
-const faculties = [
-  { icon: Cpu, name: "Faculty of Engineering", desc: "CSE, EEE, Civil & Mechanical" },
-  { icon: Briefcase, name: "Faculty of Business", desc: "BBA, MBA & Economics" },
-  { icon: Stethoscope, name: "Faculty of Health Sciences", desc: "Pharmacy, Public Health & Nursing" },
-  { icon: FlaskConical, name: "Faculty of Science", desc: "Mathematics, Physics & Chemistry" },
-  { icon: BookOpen, name: "Faculty of Arts & Humanities", desc: "English, Law & Social Sciences" },
-  { icon: GraduationCap, name: "Faculty of Education", desc: "B.Ed & M.Ed Programs" },
+const ecosystem = [
+  {
+    image: engineeringImg,
+    title: "Faculty of Engineering",
+    subtitle: "CSE, EEE, Civil & Mechanical",
+    tag: "Faculty",
+  },
+  {
+    image: businessImg,
+    title: "Faculty of Business",
+    subtitle: "BBA, MBA & Economics",
+    tag: "Faculty",
+  },
+  {
+    image: healthImg,
+    title: "Faculty of Health Sciences",
+    subtitle: "Pharmacy, Public Health & Nursing",
+    tag: "Faculty",
+  },
+  {
+    image: cseImg,
+    title: "Dept. of Computer Science",
+    subtitle: "Software, AI & Cybersecurity",
+    tag: "Department",
+  },
+  {
+    image: clubsImg,
+    title: "Student Clubs & Societies",
+    subtitle: "Tech, Sports, Culture & Arts",
+    tag: "Clubs",
+  },
+  {
+    image: scienceImg,
+    title: "Faculty of Science",
+    subtitle: "Mathematics, Physics & Chemistry",
+    tag: "Faculty",
+  },
 ];
 
-const departments = [
-  { icon: Code2, name: "Dept. of CSE" },
-  { icon: Cpu, name: "Dept. of EEE" },
-  { icon: Building2, name: "Dept. of Civil" },
-  { icon: Briefcase, name: "Dept. of BBA" },
-  { icon: Stethoscope, name: "Dept. of Pharmacy" },
-  { icon: BookOpen, name: "Dept. of English" },
-];
+const container = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
-const clubs = [
-  { icon: Code2, name: "PCIU Computer Club" },
-  { icon: Trophy, name: "Sports Club" },
-  { icon: Music, name: "Cultural Club" },
-  { icon: Camera, name: "Photography Society" },
-  { icon: Users, name: "Debate Club" },
-  { icon: BookOpen, name: "Literary Society" },
-];
+const item = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
+};
 
-const Card = ({ icon: Icon, name, desc }: { icon: any; name: string; desc?: string }) => (
-  <motion.div
-    whileHover={{ y: -4, scale: 1.02 }}
-    transition={{ type: "spring", stiffness: 300 }}
-    className="glass-card hud-border rounded-xl p-5 group cursor-pointer"
-  >
-    <div className="flex items-start gap-4">
-      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-        <Icon className="w-6 h-6 text-primary" />
+export default function FacultiesSection() {
+  return (
+    <section className="relative py-16 px-6 overflow-hidden">
+      <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+      <div className="container max-w-7xl mx-auto relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-10"
+        >
+          <span className="text-xs font-mono uppercase tracking-widest text-primary">
+            // Ecosystem
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black mt-2 mb-3">
+            Powering the Entire{" "}
+            <span className="text-primary neon-text">PCIU Ecosystem</span>
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto text-sm">
+            Faculties, departments and student clubs running their elections on
+            UniVote.
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
+          {ecosystem.map((entity) => (
+            <motion.div
+              key={entity.title}
+              variants={item}
+              whileHover={{ y: -6, scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="group glass-card hud-border rounded-2xl overflow-hidden cursor-pointer"
+            >
+              <div className="relative h-36 overflow-hidden">
+                <img
+                  src={entity.image}
+                  alt={entity.title}
+                  loading="lazy"
+                  width={1024}
+                  height={512}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+                <span className="absolute top-3 left-3 text-[10px] font-mono uppercase tracking-wider text-primary bg-background/60 backdrop-blur-sm px-2 py-1 rounded-md border border-primary/20">
+                  {entity.tag}
+                </span>
+                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <ArrowUpRight className="w-4 h-4 text-primary" />
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="font-semibold text-foreground text-base leading-snug group-hover:text-primary transition-colors duration-300">
+                  {entity.title}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {entity.subtitle}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-foreground leading-tight">{name}</h3>
-        {desc && <p className="text-xs text-muted-foreground mt-1">{desc}</p>}
-      </div>
-    </div>
-  </motion.div>
-);
-
-const Group = ({ title, tag, items }: { title: string; tag: string; items: any[] }) => (
-  <div className="mb-16 last:mb-0">
-    <div className="mb-6">
-      <span className="text-xs font-mono uppercase tracking-widest text-primary">{tag}</span>
-      <h3 className="text-2xl sm:text-3xl font-bold mt-1">{title}</h3>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {items.map((it) => (
-        <Card key={it.name} {...it} />
-      ))}
-    </div>
-  </div>
-);
-
-const FacultiesSection = () => (
-  <section className="relative py-24 px-6 overflow-hidden">
-    <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
-    <div className="container max-w-7xl mx-auto relative z-10">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-14"
-      >
-        <span className="text-xs font-mono uppercase tracking-widest text-primary">// Network</span>
-        <h2 className="text-3xl sm:text-5xl font-black mt-2 mb-4">
-          Powering the Entire <span className="text-primary neon-text">PCIU Ecosystem</span>
-        </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Faculties, departments and student clubs running their elections on UniVote.
-        </p>
-      </motion.div>
-
-      <Group title="Faculties" tag="// 01_Faculties" items={faculties} />
-      <Group title="Departments" tag="// 02_Departments" items={departments} />
-      <Group title="Student Clubs" tag="// 03_Clubs" items={clubs} />
-    </div>
-  </section>
-);
-
-export default FacultiesSection;
+    </section>
+  );
+}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Vote, Menu, X, LogOut } from "lucide-react";
+import { Vote, Menu, X, LogOut, ShieldCheck, Wrench } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -8,12 +8,13 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, isModerator, isApproved, signOut } = useAuth();
 
   const navItems = [
     { label: "Campaigns", href: "/campaigns" },
-    ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
-    { label: "Candidate Portal", href: "/candidate" },
+    { label: "Community", href: "/community" },
+    ...(isApproved ? [{ label: "Candidate Portal", href: "/candidate" }] : []),
+    ...(isAdmin || isModerator ? [{ label: "Dashboard", href: "/admin" }] : []),
   ];
 
   const handleSignOut = async () => {
@@ -31,12 +32,10 @@ const Navbar = () => {
           <span className="text-lg font-bold tracking-tight">UniVote</span>
         </Link>
 
-        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-1">
           {navItems.map((item) => (
             <Link
-              key={item.href}
-              to={item.href}
+              key={item.href} to={item.href}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 location.pathname === item.href
                   ? "text-primary bg-primary/10"
@@ -50,14 +49,23 @@ const Navbar = () => {
 
         <div className="hidden md:flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">{user.email}</span>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary">
+                  <ShieldCheck className="w-3 h-3" /> Admin
+                </span>
+              )}
+              {isModerator && !isAdmin && (
+                <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-400">
+                  <Wrench className="w-3 h-3" /> Mod
+                </span>
+              )}
+              <span className="text-sm text-muted-foreground max-w-[180px] truncate">{user.email}</span>
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                Sign Out
               </button>
             </div>
           ) : (
@@ -70,13 +78,11 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile toggle */}
         <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -85,9 +91,7 @@ const Navbar = () => {
         >
           {navItems.map((item) => (
             <Link
-              key={item.href}
-              to={item.href}
-              onClick={() => setOpen(false)}
+              key={item.href} to={item.href} onClick={() => setOpen(false)}
               className="block px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             >
               {item.label}
@@ -102,8 +106,7 @@ const Navbar = () => {
             </button>
           ) : (
             <Link
-              to="/login"
-              onClick={() => setOpen(false)}
+              to="/login" onClick={() => setOpen(false)}
               className="block text-center px-4 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground"
             >
               Sign In

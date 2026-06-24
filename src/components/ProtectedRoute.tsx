@@ -4,11 +4,13 @@ import type { Enums } from "@/integrations/supabase/types";
 
 interface Props {
   children: React.ReactNode;
-  requiredRole?: Enums<"app_role">;
+  requiredRole?: Enums<"app_role"> | "admin_or_moderator";
+  /** if true, bypass the "must be approved" gate (e.g. for the pending-approval page itself) */
+  allowUnapproved?: boolean;
 }
 
-const ProtectedRoute = ({ children, requiredRole }: Props) => {
-  const { user, loading, roles } = useAuth();
+const ProtectedRoute = ({ children, requiredRole, allowUnapproved }: Props) => {
+  const { user, loading, roles, isApproved, isAdmin, isModerator } = useAuth();
 
   if (loading) {
     return (
@@ -19,8 +21,15 @@ const ProtectedRoute = ({ children, requiredRole }: Props) => {
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (requiredRole && !roles.includes(requiredRole)) {
+
+  if (requiredRole === "admin_or_moderator") {
+    if (!isAdmin && !isModerator) return <Navigate to="/campaigns" replace />;
+  } else if (requiredRole && !roles.includes(requiredRole)) {
     return <Navigate to="/campaigns" replace />;
+  }
+
+  if (!allowUnapproved && !isApproved) {
+    return <Navigate to="/pending-approval" replace />;
   }
 
   return <>{children}</>;

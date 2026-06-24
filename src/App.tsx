@@ -9,10 +9,12 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import PendingApproval from "./pages/PendingApproval";
 import Campaigns from "./pages/Campaigns";
 import CampaignDetail from "./pages/CampaignDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import CandidatePortal from "./pages/CandidatePortal";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,9 +31,17 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/pending-approval"
+              element={<ProtectedRoute allowUnapproved><PendingApproval /></ProtectedRoute>}
+            />
             <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
             <Route path="/campaign/:id" element={<ProtectedRoute><CampaignDetail /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+            <Route
+              path="/admin"
+              element={<ProtectedRoute requiredRole="admin_or_moderator"><AdminDashboard /></ProtectedRoute>}
+            />
             <Route path="/candidate" element={<ProtectedRoute><CandidatePortal /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

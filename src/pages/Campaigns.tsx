@@ -1,12 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Clock, Users, ChevronRight, Zap, Loader2 } from "lucide-react";
+import { Clock, Users, ChevronRight, Zap, Loader2, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { FACULTY_LIST, facultyAccent, type FacultyKey } from "@/lib/faculties";
 
-type Campaign = Tables<"campaigns">;
+type Campaign = Tables<"campaigns"> & {
+  faculty?: string | null;
+  department?: string | null;
+  election_type?: string | null;
+};
 
 const getStatus = (c: Campaign): "live" | "upcoming" | "ended" => {
   const now = new Date();
@@ -42,15 +47,23 @@ const Campaigns = () => {
   const [candidateCounts, setCandidateCounts] = useState<Record<string, number>>({});
   const [voteCounts, setVoteCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [facultyFilter, setFacultyFilter] = useState<FacultyKey | "all">("all");
 
   useEffect(() => {
     const load = async () => {
-      const { data: camps } = await supabase.from("campaigns").select("*").order("start_time", { ascending: false });
-      setCampaigns(camps ?? []);
+      const { data: camps } = await supabase
+        .from("campaigns")
+        .select("*")
+        .order("start_time", { ascending: false });
+      setCampaigns((camps as Campaign[]) ?? []);
 
       if (camps?.length) {
         const ids = camps.map((c) => c.id);
-        const { data: cands } = await supabase.from("candidates").select("campaign_id").eq("status", "approved").in("campaign_id", ids);
+        const { data: cands } = await supabase
+          .from("candidates")
+          .select("campaign_id")
+          .eq("status", "approved")
+          .in("campaign_id", ids);
         const cc: Record<string, number> = {};
         cands?.forEach((c) => { cc[c.campaign_id] = (cc[c.campaign_id] || 0) + 1; });
         setCandidateCounts(cc);
@@ -64,6 +77,11 @@ const Campaigns = () => {
     };
     load();
   }, []);
+
+  const filtered = useMemo(
+    () => (facultyFilter === "all" ? campaigns : campaigns.filter((c) => c.faculty === facultyFilter)),
+    [campaigns, facultyFilter],
+  );
 
   if (loading) {
     return (
@@ -79,35 +97,80 @@ const Campaigns = () => {
     <Layout>
       <div className="min-h-[calc(100vh-4rem)] px-6 py-12">
         <div className="container max-w-5xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Active Campaigns</h1>
             <p className="text-muted-foreground">Browse and vote in ongoing university elections</p>
           </motion.div>
 
-          {campaigns.length === 0 ? (
+          {/* Faculty filter */}
+          <div className="flex items-center gap-2 mb-6 flex-wrap">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <button
+              onClick={() => setFacultyFilter("all")}
+              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
+                facultyFilter === "all"
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              All Faculties
+            </button>
+            {FACULTY_LIST.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setFacultyFilter(f.key)}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+                  facultyFilter === f.key
+                    ? `${f.bgClass} ${f.accentClass} ${f.borderClass}`
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span>{f.emoji}</span>
+                {f.short}
+              </button>
+            ))}
+          </div>
+
+          {filtered.length === 0 ? (
             <div className="glass-card rounded-xl p-12 text-center">
-              <p className="text-muted-foreground">No campaigns yet. Check back soon!</p>
+              <p className="text-muted-foreground">No campaigns found for this filter.</p>
             </div>
           ) : (
             <div className="grid gap-4">
-              {campaigns.map((c, i) => {
+              {filtered.map((c, i) => {
                 const status = getStatus(c);
+                const fac = facultyAccent(c.faculty);
                 return (
-                  <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+                  <motion.div key={c.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                     <Link
                       to={`/campaign/${c.id}`}
-                      className="block glass-card rounded-xl p-5 hover:shadow-neon-sm hover:border-primary/30 transition-all duration-300 group"
+                      className={`block glass-card rounded-xl p-5 hover:shadow-neon-sm transition-all duration-300 group border-l-4 ${
+                        fac ? fac.borderClass : "border-l-primary/40"
+                      }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">{c.title}</h3>
                             <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${statusColors[status]}`}>
                               {status === "live" && <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary mr-1 animate-pulse-neon" />}
                               {status}
                             </span>
+                            {fac && (
+                              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${fac.bgClass} ${fac.accentClass} ${fac.borderClass}`}>
+                                {fac.emoji} {fac.short}
+                              </span>
+                            )}
+                            {c.election_type && (
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border text-muted-foreground">
+                                {c.election_type}
+                              </span>
+                            )}
                           </div>
-                          <div className="flex items-center gap-5 text-sm text-muted-foreground">
+                          {c.department && (
+                            <p className="text-xs text-muted-foreground mb-1.5">{c.department}</p>
+                          )}
+                          <div className="flex items-center gap-5 text-sm text-muted-foreground flex-wrap">
                             <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{candidateCounts[c.id] || 0} candidates</span>
                             <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" />{voteCounts[c.id] || 0} voters</span>
                             <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{getTimeLabel(c)}</span>

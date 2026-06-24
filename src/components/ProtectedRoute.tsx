@@ -10,9 +10,12 @@ interface Props {
 }
 
 const ProtectedRoute = ({ children, requiredRole, allowUnapproved }: Props) => {
-  const { user, loading, roles, isApproved, isAdmin, isModerator } = useAuth();
+  const { user, loading, roles, profile, isApproved, isAdmin, isModerator } = useAuth();
 
-  if (loading) {
+  // Wait for both roles and profile to hydrate before deciding redirects
+  const hydrating = loading || (!!user && roles.length === 0 && profile === null);
+
+  if (hydrating) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />

@@ -16,30 +16,42 @@ export type Database = {
     Tables: {
       campaigns: {
         Row: {
+          cover_image: string | null
           created_at: string
           created_by: string
+          department: string | null
           description: string | null
+          election_type: string | null
           end_time: string
+          faculty: Database["public"]["Enums"]["faculty"] | null
           id: string
           start_time: string
           title: string
           updated_at: string
         }
         Insert: {
+          cover_image?: string | null
           created_at?: string
           created_by: string
+          department?: string | null
           description?: string | null
+          election_type?: string | null
           end_time: string
+          faculty?: Database["public"]["Enums"]["faculty"] | null
           id?: string
           start_time: string
           title: string
           updated_at?: string
         }
         Update: {
+          cover_image?: string | null
           created_at?: string
           created_by?: string
+          department?: string | null
           description?: string | null
+          election_type?: string | null
           end_time?: string
+          faculty?: Database["public"]["Enums"]["faculty"] | null
           id?: string
           start_time?: string
           title?: string
@@ -93,6 +105,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moderator_assignments: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          faculty: Database["public"]["Enums"]["faculty"]
+          id: string
+          invited_email: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          faculty: Database["public"]["Enums"]["faculty"]
+          id?: string
+          invited_email?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          faculty?: Database["public"]["Enums"]["faculty"]
+          id?: string
+          invited_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       poll_votes: {
         Row: {
@@ -225,32 +264,56 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
+          batch: string | null
           community_status: string
           created_at: string
+          department: string | null
           display_name: string | null
           email: string | null
+          faculty: Database["public"]["Enums"]["faculty"] | null
           id: string
+          phone: string | null
+          student_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
+          batch?: string | null
           community_status?: string
           created_at?: string
+          department?: string | null
           display_name?: string | null
           email?: string | null
+          faculty?: Database["public"]["Enums"]["faculty"] | null
           id?: string
+          phone?: string | null
+          student_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
+          batch?: string | null
           community_status?: string
           created_at?: string
+          department?: string | null
           display_name?: string | null
           email?: string | null
+          faculty?: Database["public"]["Enums"]["faculty"] | null
           id?: string
+          phone?: string | null
+          student_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -357,9 +420,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_any_moderator: { Args: { _user_id: string }; Returns: boolean }
+      is_moderator_of: {
+        Args: {
+          _faculty: Database["public"]["Enums"]["faculty"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      app_role: "admin" | "candidate" | "voter"
+      app_role: "admin" | "candidate" | "voter" | "moderator" | "student"
+      approval_status: "pending" | "approved" | "rejected"
+      faculty:
+        | "business_studies"
+        | "humanities_social_law"
+        | "science_engineering"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -487,7 +563,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "candidate", "voter"],
+      app_role: ["admin", "candidate", "voter", "moderator", "student"],
+      approval_status: ["pending", "approved", "rejected"],
+      faculty: [
+        "business_studies",
+        "humanities_social_law",
+        "science_engineering",
+      ],
     },
   },
 } as const

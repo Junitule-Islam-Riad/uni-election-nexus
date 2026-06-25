@@ -160,7 +160,8 @@ const Composer = ({ onPosted, approved }: { onPosted: () => void; approved: bool
 };
 
 const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
-  const { user } = useAuth();
+  const { user, isAdmin, isModerator } = useAuth();
+  const canModerate = isAdmin || isModerator;
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
 

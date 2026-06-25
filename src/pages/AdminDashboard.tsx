@@ -107,6 +107,8 @@ const AdminDashboard = () => {
     } else setModerators([]);
   };
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     loadCampaigns();
     loadPending();
@@ -115,6 +117,30 @@ const AdminDashboard = () => {
     loadModerators();
   }, []);
   useEffect(() => { loadWhitelist(); }, [selectedCampaignId]);
+
+  // Open the create-campaign wizard when arriving from /admin?create=1&faculty=KEY
+  useEffect(() => {
+    const wantsCreate = searchParams.get("create") === "1";
+    const facultyParam = searchParams.get("faculty") as FacultyKey | null;
+    if (wantsCreate) {
+      setTab("campaigns");
+      if (facultyParam && FACULTIES[facultyParam]) {
+        setNewFaculty(facultyParam);
+        setNewDepartment("");
+        setNewElectionType("");
+        setNewExtra("");
+        setCreateStep("form");
+      } else {
+        setCreateStep("faculty");
+      }
+      // clear params so refresh doesn't reopen
+      const next = new URLSearchParams(searchParams);
+      next.delete("create");
+      next.delete("faculty");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const approveStudent = async (userId: string, status: "approved" | "rejected") => {
     const { error } = await supabase

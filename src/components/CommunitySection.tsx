@@ -202,6 +202,20 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
 
   const initials = (post.author?.display_name ?? "P").slice(0, 2).toUpperCase();
 
+  const deletePost = async () => {
+    if (!confirm("Delete this post? This cannot be undone.")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", post.id);
+    if (error) return toast.error(error.message);
+    toast.success("Post removed");
+    onChange();
+  };
+
+  const deleteComment = async (id: string) => {
+    const { error } = await supabase.from("post_comments").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    onChange();
+  };
+
   return (
     <motion.article
       layout
@@ -213,12 +227,21 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
           {initials}
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm">{post.author?.display_name ?? "PCIU Member"}</div>
           <div className="text-xs text-muted-foreground">
             {new Date(post.created_at).toLocaleString()}
           </div>
         </div>
+        {canModerate && (
+          <button
+            onClick={deletePost}
+            title="Remove post (moderator)"
+            className="p-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
       </header>
 
       {post.content && <p className="text-foreground whitespace-pre-wrap mb-3">{post.content}</p>}

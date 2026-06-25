@@ -320,7 +320,7 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
             className="overflow-hidden mt-3 space-y-2"
           >
             {post.comments?.map((c) => (
-              <div key={c.id} className="flex gap-2 text-sm">
+              <div key={c.id} className="flex gap-2 text-sm group/comment">
                 <div className="w-7 h-7 rounded-full bg-muted/60 flex items-center justify-center text-xs flex-shrink-0">
                   {(c.author?.display_name ?? "?").slice(0, 1).toUpperCase()}
                 </div>
@@ -328,6 +328,15 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
                   <div className="text-xs font-medium">{c.author?.display_name ?? "User"}</div>
                   <div>{c.content}</div>
                 </div>
+                {canModerate && (
+                  <button
+                    onClick={() => deleteComment(c.id)}
+                    title="Remove comment"
+                    className="opacity-0 group-hover/comment:opacity-100 p-1 text-muted-foreground hover:text-destructive transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             ))}
             {user && (

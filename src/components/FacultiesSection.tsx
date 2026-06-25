@@ -1,62 +1,96 @@
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Rocket } from "lucide-react";
+import { Link } from "react-router-dom";
+import { FACULTY_LIST, type FacultyMeta } from "@/lib/faculties";
 import engineeringImg from "@/assets/ecosystem-engineering.jpg";
 import businessImg from "@/assets/ecosystem-business.jpg";
-import healthImg from "@/assets/ecosystem-health.jpg";
-import cseImg from "@/assets/ecosystem-cse.jpg";
 import clubsImg from "@/assets/ecosystem-clubs.jpg";
-import scienceImg from "@/assets/ecosystem-science.jpg";
 
-const ecosystem = [
-  {
-    image: engineeringImg,
-    title: "Faculty of Engineering",
-    subtitle: "CSE, EEE, Civil & Mechanical",
-    tag: "Faculty",
-  },
-  {
-    image: businessImg,
-    title: "Faculty of Business",
-    subtitle: "BBA, MBA & Economics",
-    tag: "Faculty",
-  },
-  {
-    image: healthImg,
-    title: "Faculty of Health Sciences",
-    subtitle: "Pharmacy, Public Health & Nursing",
-    tag: "Faculty",
-  },
-  {
-    image: cseImg,
-    title: "Dept. of Computer Science",
-    subtitle: "Software, AI & Cybersecurity",
-    tag: "Department",
-  },
-  {
-    image: clubsImg,
-    title: "Student Clubs & Societies",
-    subtitle: "Tech, Sports, Culture & Arts",
-    tag: "Clubs",
-  },
-  {
-    image: scienceImg,
-    title: "Faculty of Science",
-    subtitle: "Mathematics, Physics & Chemistry",
-    tag: "Faculty",
-  },
-];
+const facultyImages: Record<string, string> = {
+  business_studies: businessImg,
+  humanities_social_law: clubsImg,
+  science_engineering: engineeringImg,
+};
 
 const container = {
   hidden: {},
-  show: {
-    transition: { staggerChildren: 0.1 },
-  },
+  show: { transition: { staggerChildren: 0.12 } },
 };
 
 const item = {
   hidden: { opacity: 0, y: 30 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
 };
+
+const FacultyCard = ({ f }: { f: FacultyMeta }) => (
+  <motion.div
+    variants={item}
+    whileHover={{ y: -6 }}
+    transition={{ type: "spring", stiffness: 300, damping: 22 }}
+    className={`group relative glass-card hud-border rounded-2xl overflow-hidden flex flex-col border ${f.borderClass}`}
+  >
+    <div className="relative h-40 overflow-hidden">
+      <img
+        src={facultyImages[f.key]}
+        alt={f.name}
+        loading="lazy"
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      <div className={`absolute inset-0 bg-gradient-to-br ${f.gradientClass} mix-blend-overlay opacity-60`} />
+      <span
+        className={`absolute top-3 left-3 text-[10px] font-mono uppercase tracking-[0.2em] ${f.accentClass} bg-background/70 backdrop-blur-sm px-2 py-1 rounded-md border ${f.borderClass}`}
+      >
+        {f.short}
+      </span>
+      <div
+        className={`absolute top-3 right-3 w-9 h-9 rounded-full ${f.bgClass} backdrop-blur-sm border ${f.borderClass} flex items-center justify-center text-xl`}
+      >
+        {f.emoji}
+      </div>
+    </div>
+
+    <div className="p-5 flex flex-col flex-1">
+      <h3 className={`font-bold text-lg leading-snug mb-1 group-hover:${f.accentClass} transition-colors`}>
+        {f.name}
+      </h3>
+      <p className="text-xs text-muted-foreground mb-4">{f.tagline}</p>
+
+      <div className="mb-4">
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+          // Departments
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {f.departments.map((d) => (
+            <span
+              key={d}
+              className={`text-[11px] px-2 py-1 rounded-md ${f.bgClass} ${f.accentClass} border ${f.borderClass}`}
+            >
+              {d}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-auto flex items-center gap-2">
+        <Link
+          to={`/admin?create=1&faculty=${f.key}`}
+          className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${f.bgClass} ${f.accentClass} border ${f.borderClass} hover:ring-2 ${f.ringClass} transition`}
+        >
+          <Rocket className="w-3.5 h-3.5" />
+          Start Campaign
+        </Link>
+        <Link
+          to={`/campaigns?faculty=${f.key}`}
+          className="inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-xs font-medium border border-border/60 text-muted-foreground hover:text-foreground hover:border-foreground/40 transition"
+        >
+          View
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function FacultiesSection() {
   return (
@@ -78,8 +112,7 @@ export default function FacultiesSection() {
             <span className="text-primary neon-text">PCIU Ecosystem</span>
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm">
-            Faculties, departments and student clubs running their elections on
-            UniVote.
+            Three faculties, every department — launch an election in seconds.
           </p>
         </motion.div>
 
@@ -87,43 +120,11 @@ export default function FacultiesSection() {
           variants={container}
           initial="hidden"
           whileInView="show"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+          viewport={{ once: true, margin: "-80px" }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
-          {ecosystem.map((entity) => (
-            <motion.div
-              key={entity.title}
-              variants={item}
-              whileHover={{ y: -6, scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="group glass-card hud-border rounded-2xl overflow-hidden cursor-pointer"
-            >
-              <div className="relative h-36 overflow-hidden">
-                <img
-                  src={entity.image}
-                  alt={entity.title}
-                  loading="lazy"
-                  width={1024}
-                  height={512}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-                <span className="absolute top-3 left-3 text-[10px] font-mono uppercase tracking-wider text-primary bg-background/60 backdrop-blur-sm px-2 py-1 rounded-md border border-primary/20">
-                  {entity.tag}
-                </span>
-                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <ArrowUpRight className="w-4 h-4 text-primary" />
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-foreground text-base leading-snug group-hover:text-primary transition-colors duration-300">
-                  {entity.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {entity.subtitle}
-                </p>
-              </div>
-            </motion.div>
+          {FACULTY_LIST.map((f) => (
+            <FacultyCard key={f.key} f={f} />
           ))}
         </motion.div>
       </div>

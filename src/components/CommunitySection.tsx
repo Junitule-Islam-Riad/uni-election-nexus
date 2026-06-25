@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart, ThumbsUp, PartyPopper, Lightbulb, MessageCircle, Image as ImageIcon,
-  Video, BarChart3, Send, Loader2, X, Plus,
+  Video, BarChart3, Send, Loader2, X, Plus, Trash2, ShieldCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -160,7 +160,8 @@ const Composer = ({ onPosted, approved }: { onPosted: () => void; approved: bool
 };
 
 const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
-  const { user } = useAuth();
+  const { user, isAdmin, isModerator } = useAuth();
+  const canModerate = isAdmin || isModerator;
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
 
@@ -201,6 +202,20 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
 
   const initials = (post.author?.display_name ?? "P").slice(0, 2).toUpperCase();
 
+  const deletePost = async () => {
+    if (!confirm("Delete this post? This cannot be undone.")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", post.id);
+    if (error) return toast.error(error.message);
+    toast.success("Post removed");
+    onChange();
+  };
+
+  const deleteComment = async (id: string) => {
+    const { error } = await supabase.from("post_comments").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    onChange();
+  };
+
   return (
     <motion.article
       layout
@@ -212,12 +227,21 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
           {initials}
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm">{post.author?.display_name ?? "PCIU Member"}</div>
           <div className="text-xs text-muted-foreground">
             {new Date(post.created_at).toLocaleString()}
           </div>
         </div>
+        {canModerate && (
+          <button
+            onClick={deletePost}
+            title="Remove post (moderator)"
+            className="p-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
       </header>
 
       {post.content && <p className="text-foreground whitespace-pre-wrap mb-3">{post.content}</p>}
@@ -296,7 +320,7 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
             className="overflow-hidden mt-3 space-y-2"
           >
             {post.comments?.map((c) => (
-              <div key={c.id} className="flex gap-2 text-sm">
+              <div key={c.id} className="flex gap-2 text-sm group/comment">
                 <div className="w-7 h-7 rounded-full bg-muted/60 flex items-center justify-center text-xs flex-shrink-0">
                   {(c.author?.display_name ?? "?").slice(0, 1).toUpperCase()}
                 </div>
@@ -304,6 +328,15 @@ const PostCard = ({ post, onChange }: { post: Post; onChange: () => void }) => {
                   <div className="text-xs font-medium">{c.author?.display_name ?? "User"}</div>
                   <div>{c.content}</div>
                 </div>
+                {canModerate && (
+                  <button
+                    onClick={() => deleteComment(c.id)}
+                    title="Remove comment"
+                    className="opacity-0 group-hover/comment:opacity-100 p-1 text-muted-foreground hover:text-destructive transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             ))}
             {user && (

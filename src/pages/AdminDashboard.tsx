@@ -44,8 +44,6 @@ const AdminDashboard = () => {
 
   // Create campaign wizard
   const [createStep, setCreateStep] = useState<"closed" | "faculty" | "form">("closed");
-  const showCreate = createStep !== "closed";
-  const setShowCreate = (v: boolean) => setCreateStep(v ? "faculty" : "closed");
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newStart, setNewStart] = useState("");

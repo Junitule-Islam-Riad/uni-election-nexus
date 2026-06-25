@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart, ThumbsUp, PartyPopper, Lightbulb, MessageCircle, Image as ImageIcon,
-  Video, BarChart3, Send, Loader2, X, Plus,
+  Video, BarChart3, Send, Loader2, X, Plus, Trash2, ShieldCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";

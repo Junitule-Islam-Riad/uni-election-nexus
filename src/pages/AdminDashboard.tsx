@@ -42,8 +42,10 @@ const AdminDashboard = () => {
   const [modEmail, setModEmail] = useState("");
   const [modFaculty, setModFaculty] = useState<FacultyKey | "">("");
 
-  // Create campaign
-  const [showCreate, setShowCreate] = useState(false);
+  // Create campaign wizard
+  const [createStep, setCreateStep] = useState<"closed" | "faculty" | "form">("closed");
+  const showCreate = createStep !== "closed";
+  const setShowCreate = (v: boolean) => setCreateStep(v ? "faculty" : "closed");
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newStart, setNewStart] = useState("");
@@ -51,6 +53,7 @@ const AdminDashboard = () => {
   const [newFaculty, setNewFaculty] = useState<FacultyKey | "">("");
   const [newDepartment, setNewDepartment] = useState("");
   const [newElectionType, setNewElectionType] = useState("");
+  const [newExtra, setNewExtra] = useState("");
 
   const loadCampaigns = async () => {
     const { data } = await supabase.from("campaigns").select("*").order("created_at", { ascending: false });

@@ -282,64 +282,160 @@ const AdminDashboard = () => {
           {/* Campaigns Tab */}
           {tab === "campaigns" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-              {!showCreate ? (
+              {createStep === "closed" && (
                 <button
-                  onClick={() => setShowCreate(true)}
+                  onClick={() => setCreateStep("faculty")}
                   className="glass-card rounded-xl p-4 w-full border-dashed border-2 border-border hover:border-primary/30 transition-colors flex items-center justify-center gap-2 text-muted-foreground hover:text-primary"
                 >
                   <Plus className="w-5 h-5" />
                   <span className="font-medium">Create New Campaign</span>
                 </button>
-              ) : (
-                <div className="glass-card rounded-xl p-5 space-y-4">
-                  <h3 className="font-semibold">New Campaign</h3>
-                  <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Campaign Title" className={inputCls} />
-                  <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="Description (optional)" className={inputCls} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Faculty</label>
-                      <select
-                        value={newFaculty}
-                        onChange={(e) => { setNewFaculty(e.target.value as FacultyKey); setNewDepartment(""); }}
-                        className={inputCls}
-                      >
-                        <option value="">Select faculty</option>
-                        {FACULTY_LIST.map((f) => <option key={f.key} value={f.key}>{f.short}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Department</label>
-                      <select
-                        value={newDepartment}
-                        onChange={(e) => setNewDepartment(e.target.value)}
-                        disabled={!newFaculty}
-                        className={inputCls}
-                      >
-                        <option value="">Optional</option>
-                        {newFaculty && FACULTIES[newFaculty].departments.map((d) => <option key={d} value={d}>{d}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Election Type</label>
-                    <input value={newElectionType} onChange={(e) => setNewElectionType(e.target.value)} placeholder="e.g. Club President, CR, Cultural Lead" className={inputCls} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Start Time</label>
-                      <input type="datetime-local" value={newStart} onChange={(e) => setNewStart(e.target.value)} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">End Time</label>
-                      <input type="datetime-local" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} className={inputCls} />
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={createCampaign} className="px-5 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:shadow-neon-sm transition-all">Create</button>
-                    <button onClick={() => setShowCreate(false)} className="px-5 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground">Cancel</button>
-                  </div>
-                </div>
               )}
+
+              {createStep === "faculty" && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">Step 1 · Choose a Faculty</h3>
+                      <p className="text-sm text-muted-foreground">Each faculty has its own designed form and election presets.</p>
+                    </div>
+                    <button onClick={() => setCreateStep("closed")} className="text-sm text-muted-foreground hover:text-foreground">Cancel</button>
+                  </div>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {FACULTY_LIST.map((f, i) => (
+                      <motion.button
+                        key={f.key}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.08 }}
+                        whileHover={{ y: -4 }}
+                        onClick={() => {
+                          setNewFaculty(f.key);
+                          setNewDepartment("");
+                          setNewElectionType("");
+                          setNewExtra("");
+                          setCreateStep("form");
+                        }}
+                        className={`relative overflow-hidden text-left rounded-2xl p-5 glass-card border ${f.borderClass} hover:${f.ringClass} hover:ring-2 transition-all group`}
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${f.gradientClass} opacity-80 group-hover:opacity-100 transition-opacity pointer-events-none`} />
+                        <div className="relative">
+                          <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${f.bgClass} ${f.accentClass} text-2xl mb-3`}>
+                            {f.emoji}
+                          </div>
+                          <div className={`text-[10px] tracking-[0.2em] font-semibold ${f.accentClass} mb-1`}>{f.short}</div>
+                          <h4 className="font-semibold leading-tight mb-1">{f.name}</h4>
+                          <p className="text-xs text-muted-foreground mb-3">{f.tagline}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {f.electionTypes.slice(0, 3).map((t) => (
+                              <span key={t} className={`text-[10px] px-2 py-0.5 rounded-full ${f.bgClass} ${f.accentClass} border ${f.borderClass}`}>
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                          <div className={`mt-4 text-xs font-medium ${f.accentClass} flex items-center gap-1`}>
+                            Configure campaign →
+                          </div>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {createStep === "form" && newFaculty && (() => {
+                const meta = FACULTIES[newFaculty];
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`relative overflow-hidden glass-card rounded-2xl p-6 space-y-4 border ${meta.borderClass}`}
+                  >
+                    <div className={`absolute inset-x-0 top-0 h-32 bg-gradient-to-b ${meta.gradientClass} pointer-events-none`} />
+                    <div className="relative flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-xl ${meta.bgClass} ${meta.accentClass} text-2xl flex items-center justify-center`}>
+                          {meta.emoji}
+                        </div>
+                        <div>
+                          <div className={`text-[10px] tracking-[0.2em] font-semibold ${meta.accentClass}`}>STEP 2 · {meta.short}</div>
+                          <h3 className="font-semibold">{meta.name}</h3>
+                          <p className="text-xs text-muted-foreground">{meta.tagline}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setCreateStep("faculty")}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        ← Change faculty
+                      </button>
+                    </div>
+
+                    <div className="relative space-y-4">
+                      <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={`Campaign Title (e.g. ${meta.electionTypes[0]} ${new Date().getFullYear()})`} className={inputCls} />
+                      <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="Description (optional)" className={inputCls} />
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Department</label>
+                          <select value={newDepartment} onChange={(e) => setNewDepartment(e.target.value)} className={inputCls}>
+                            <option value="">All departments</option>
+                            {meta.departments.map((d) => <option key={d} value={d}>{d}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Election Type</label>
+                          <select value={newElectionType} onChange={(e) => setNewElectionType(e.target.value)} className={inputCls}>
+                            <option value="">Select type</option>
+                            {meta.electionTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">{meta.extraField.label}</label>
+                        <div className="flex flex-wrap gap-2">
+                          {meta.extraField.options.map((opt) => (
+                            <button
+                              type="button"
+                              key={opt}
+                              onClick={() => setNewExtra(opt)}
+                              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                                newExtra === opt
+                                  ? `${meta.bgClass} ${meta.accentClass} ${meta.borderClass}`
+                                  : "border-border text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Start Time</label>
+                          <input type="datetime-local" value={newStart} onChange={(e) => setNewStart(e.target.value)} className={inputCls} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">End Time</label>
+                          <input type="datetime-local" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} className={inputCls} />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button onClick={createCampaign} className="px-5 py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:shadow-neon-sm transition-all">
+                          Create {meta.short} Campaign
+                        </button>
+                        <button onClick={() => setCreateStep("closed")} className="px-5 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })()}
+
 
               {campaigns.map((c) => (
                 <div key={c.id} className="glass-card rounded-xl p-5">

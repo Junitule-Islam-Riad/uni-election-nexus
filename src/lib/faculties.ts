@@ -3,17 +3,27 @@
 
 export type FacultyKey = "business_studies" | "humanities_social_law" | "science_engineering";
 
+export interface FacultyExtraField {
+  key: string;
+  label: string;
+  options: string[];
+}
+
 export interface FacultyMeta {
   key: FacultyKey;
   name: string;
   short: string;
+  tagline: string;
   departments: string[];
+  electionTypes: string[];
+  extraField: FacultyExtraField;
   // Tailwind utility-friendly accent (used for borders, glows, chips)
   accent: string; // hsl tuple-like string for inline use
   accentClass: string; // tailwind text class
   bgClass: string; // tailwind bg class
   borderClass: string;
   ringClass: string;
+  gradientClass: string; // tailwind gradient utility used on card headers
   emoji: string;
 }
 

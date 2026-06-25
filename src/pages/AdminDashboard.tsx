@@ -140,9 +140,11 @@ const AdminDashboard = () => {
       toast({ title: "Missing info", description: "Title, faculty, start & end are required.", variant: "destructive" });
       return;
     }
+    const meta = newFaculty ? FACULTIES[newFaculty] : null;
+    const extraSuffix = newExtra && meta ? ` · ${meta.extraField.label}: ${newExtra}` : "";
     const { error } = await supabase.from("campaigns").insert({
       title: newTitle,
-      description: newDesc || null,
+      description: (newDesc || "") + extraSuffix || null,
       start_time: new Date(newStart).toISOString(),
       end_time: new Date(newEnd).toISOString(),
       created_by: user.id,
@@ -153,9 +155,9 @@ const AdminDashboard = () => {
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
       toast({ title: "Campaign created!" });
-      setShowCreate(false);
+      setCreateStep("closed");
       setNewTitle(""); setNewDesc(""); setNewStart(""); setNewEnd("");
-      setNewFaculty(""); setNewDepartment(""); setNewElectionType("");
+      setNewFaculty(""); setNewDepartment(""); setNewElectionType(""); setNewExtra("");
       loadCampaigns();
     }
   };

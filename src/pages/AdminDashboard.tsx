@@ -4,6 +4,7 @@ import {
   Plus, Users, BarChart3, CheckCircle, XCircle, Link as LinkIcon,
   Trash2, MessageSquare, GraduationCap, ShieldPlus,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";

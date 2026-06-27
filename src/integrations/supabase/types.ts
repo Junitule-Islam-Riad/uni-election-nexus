@@ -106,6 +106,59 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          campaign_id: string | null
+          category: string
+          cover_image: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          event_date: string
+          id: string
+          location: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          category?: string
+          cover_image?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          event_date: string
+          id?: string
+          location?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string | null
+          category?: string
+          cover_image?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          event_date?: string
+          id?: string
+          location?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moderator_assignments: {
         Row: {
           assigned_by: string | null
@@ -237,6 +290,8 @@ export type Database = {
           media_type: string | null
           media_url: string | null
           poll_options: Json | null
+          shared_event_id: string | null
+          shared_post_id: string | null
           updated_at: string
           user_id: string
         }
@@ -247,6 +302,8 @@ export type Database = {
           media_type?: string | null
           media_url?: string | null
           poll_options?: Json | null
+          shared_event_id?: string | null
+          shared_post_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -257,10 +314,27 @@ export type Database = {
           media_type?: string | null
           media_url?: string | null
           poll_options?: Json | null
+          shared_event_id?: string | null
+          shared_post_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_shared_event_id_fkey"
+            columns: ["shared_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_shared_post_id_fkey"
+            columns: ["shared_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
